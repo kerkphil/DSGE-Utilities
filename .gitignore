@@ -1,0 +1,31 @@
+#Build Files and Compiled Files
+################################
+*.pyc
+build/
+dist/
+byumcl/interp/build/
+
+#Latex Related Files
+####################
+*.aux
+*.fdb_latexmk
+*.nav
+*.out
+*.snm
+*.gz
+*.toc
+*.pdfsync
+*.blg
+*.bbl
+*.log
+*.fls
+
+#Documentation Build Files
+##########################
+docs/_build/
+
+#Misc Files
+############
+byumcl.egg-info/
+MANIFEST
+MANIFEST.in
