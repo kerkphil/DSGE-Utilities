@@ -8,5 +8,6 @@ This repository contains Python code that helps with the solution and simulation
 Modules
 =======
 
-* DSGE Moments Calcuator
+* DSGE Moments Calculator
 * Linear Approximation Bundle, based on MATLAB code written by Uhlig
+* Euler Error Calculator
