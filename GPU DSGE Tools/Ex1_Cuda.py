@@ -8,18 +8,22 @@ This example solve and simulates a simple DSGE model by a cloded-form solution
 for the steady state and linearization about that steady state for the 
 transition function.  It also calculates key business cycle moments and 
 Euler equation errors.  It simulates nsim times with nobs observations in each
-simulation.  The simulations are run in serial.  The moments, Euler errors and 
-execution time are placed in Pandas dataframes and then written to an Excel
-file.
+simulation.  The simulations are run in parallel on the gpu's.  The moments, 
+Euler errors and execution time are placed in Pandas dataframes and then 
+written to an Excel file.
 
 """
 import numpy as np
 import pandas as pd
+from numba import jit
+import numba
 from timeit import default_timer as timer
 from LinApp_Deriv import LinApp_Deriv
 from LinApp_Solve import LinApp_Solve
 from EulerErrors import EEcalc
 from DSGEmoments import calcmom
+
+numba.cuda.api.detect()
     
 def example_def(kp, k, z, param):
     # calculate definitions for GDP, wages, rental rates, consumption
@@ -60,12 +64,13 @@ def example_tfunc(k, z, tpars):
 def example_lfunc(z, eps, lpars):
     zp = phi*z + sigma*eps
     return zp
-    
-def simulate_serial(nsim, nobs, ntoss, simpars):
+
+@jit(['(int32, int32, int32, float32[:])'],target='cuda') 
+def simulate_parallel(nsim, nobs, ntoss, simpars):
     # initialize arrays to store simulation results
     MomentsAll = np.zeros((6, 7, nsim))
     EEmatAll = np.zeros((3, nsim))
-     
+    
     # perform simulations
     for s in range(0, nsim):
         # draw randowm errors
@@ -111,7 +116,7 @@ def simulate_serial(nsim, nobs, ntoss, simpars):
         
         # Add results of current simulation to results arrays
         MomentsAll[:, :, s] = Moments
-        EEmatAll[:, s] = EEmat
+        EEmatAll[:, s] = EEmat 
     
     return MomentsAll, EEmatAll, MomNames
 
@@ -166,13 +171,14 @@ lpars = (phi)
 # collect parameters for simulate_serial function
 simpars = (efunc, epars, tfunc, tpars, efunc, epars)
 
+
 # start timer
 start = timer()
-# perform simulations
+# perform  simulations
 (MomentsAll, EEmatAll, MomNames) = \
-     simulate_serial(nsim, nobs, ntoss, simpars)
+     simulate_parallel(nsim, nobs, ntoss, simpars)
 # end timer
-elapsed = timer() - start  
+elapsed = timer() - start 
    
 # take averages over the simulations    
 MomentsAvg = MomentsAll.mean(axis=2)

@@ -8,9 +8,9 @@ This example solve and simulates a simple DSGE model by a cloded-form solution
 for the steady state and linearization about that steady state for the 
 transition function.  It also calculates key business cycle moments and 
 Euler equation errors.  It simulates nsim times with nobs observations in each
-simulation.  The simulations are run in serial.  The moments, Euler errors and 
-execution time are placed in Pandas dataframes and then written to an Excel
-file.
+simulation.  The simulations are run in parallel on the cpu's.  The moments, 
+Euler errors and execution time are placed in Pandas dataframes and then 
+written to an Excel file.
 
 """
 import numpy as np
@@ -60,12 +60,13 @@ def example_tfunc(k, z, tpars):
 def example_lfunc(z, eps, lpars):
     zp = phi*z + sigma*eps
     return zp
-    
-def simulate_serial(nsim, nobs, ntoss, simpars):
+
+@jit(['(int32, int32, int32, float32[:])'],target='cpu') 
+def simulate_parallel(nsim, nobs, ntoss, simpars):
     # initialize arrays to store simulation results
     MomentsAll = np.zeros((6, 7, nsim))
     EEmatAll = np.zeros((3, nsim))
-     
+    
     # perform simulations
     for s in range(0, nsim):
         # draw randowm errors
@@ -111,7 +112,7 @@ def simulate_serial(nsim, nobs, ntoss, simpars):
         
         # Add results of current simulation to results arrays
         MomentsAll[:, :, s] = Moments
-        EEmatAll[:, s] = EEmat
+        EEmatAll[:, s] = EEmat 
     
     return MomentsAll, EEmatAll, MomNames
 
@@ -166,13 +167,14 @@ lpars = (phi)
 # collect parameters for simulate_serial function
 simpars = (efunc, epars, tfunc, tpars, efunc, epars)
 
+
 # start timer
 start = timer()
-# perform simulations
+# perform  simulations
 (MomentsAll, EEmatAll, MomNames) = \
-     simulate_serial(nsim, nobs, ntoss, simpars)
+     simulate_parallel(nsim, nobs, ntoss, simpars)
 # end timer
-elapsed = timer() - start  
+elapsed = timer() - start 
    
 # take averages over the simulations    
 MomentsAvg = MomentsAll.mean(axis=2)
@@ -188,7 +190,7 @@ print ('moments table: ', MomTab)
 print ('Euler errors: ', OtherTab)
 print ('computation time', elapsed)
 
-writer = pd.ExcelWriter('Ex1_Serial.xlsx')
+writer = pd.ExcelWriter('Ex1_Parallel.xlsx')
 MomTab.to_excel(writer,'Sheet1')
 OtherTab.to_excel(writer,'Sheet2')
 writer.save()
