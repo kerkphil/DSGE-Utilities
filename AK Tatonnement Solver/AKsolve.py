@@ -10,7 +10,7 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
     shrink, expandon, expand, disttype, display):
     '''
     This function performs the Auerbach-Kotlikoff contraction mapping on a 
-    function.
+    function.  This is a variant of the tatonnemont solution method.
     
     The inputs are:
         Xguess:  An initial guess for the fixed point. Can be a scalar or
