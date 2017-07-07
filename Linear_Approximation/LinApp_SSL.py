@@ -89,7 +89,7 @@ def LinApp_SSL(X0,Z,XYbar,logX,PP,QQ,UU,Y0,RR,SS,VV):
         if ny>0:
             Ytil[0,:] = Y0 - Ybar
     # simulate
-    for t in xrange(1,nobs):
+    for t in range(1, nobs):
         Xtemp, Ytemp = LinApp_Sim(Xtil[t-1,:],Z[t,:],PP,QQ,UU,RR,SS,VV)
         Xtil[t,:] = Xtemp
         if ny>0:

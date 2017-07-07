@@ -97,7 +97,7 @@ def qzswitch(i, A, B, Q, Z):
     m = np.sqrt(dot(xy,xy.conj().T))
     
     if n == 0:
-        print "qzswitch(): Inputs unchanged!"
+        print ("qzswitch(): Inputs unchanged!")
         return A, B, Q, Z
     else:
        wz = wz/n
@@ -156,7 +156,7 @@ def qzdiv(stake, A, B, Q, Z):
                 m=j
                 break
         if m==0:
-            print "qzdiv(): Inputs unchanged!"
+            print ("qzdiv(): Inputs unchanged!")
             return A, B, Q, Z
         for k in xrange(m,i,1):
             A, B, Q, Z = qzswitch(k,A,B,Q,Z)
