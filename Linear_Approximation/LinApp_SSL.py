@@ -72,6 +72,8 @@ def LinApp_SSL(X0,Z,XYbar,logX,PP,QQ,UU,Y0,RR,SS,VV):
     # get Xbar and Ybar
     Xbar = XYbar[0:nx]
     Ybar = XYbar[nx:nx+ny]
+    print(Xbar, X0)
+    print(Ybar)
 
     # Generate a history of X's and Y's
     X = zeros((nobs,nx))
