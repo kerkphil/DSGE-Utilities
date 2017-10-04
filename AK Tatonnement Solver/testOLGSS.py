@@ -42,7 +42,7 @@ def conshist(c1, *HHparams):
         if printcheck:
             # check that LLEuler is close to zero and report
             check = f1(nhist[t])
-            print "nhist", t, ": ", nhist[t], " check-n: ", check
+            print("nhist", t, ": ", nhist[t], " check-n: ", check)
         # solve for b given c and n
         bhist[t+1] = wbar*nhist[t] + (1.+rbar)*bhist[t] - chist[t]
         # if not the final period solve for next period's c from interpemporal
@@ -129,7 +129,7 @@ bar = AKsolve(bar, updatebar, UPparams, ccrit, conv, maxiter, shrinkon, \
 wbar = bar[0]
 rbar = bar[1]
 rbar_ann = (1.+rbar)**(S/100.) - 1.
-print "wbar: ", wbar, "rbar: ", rbar, "rbar annual: ", rbar_ann
+print("wbar: ", wbar, "rbar: ", rbar, "rbar annual: ", rbar_ann)
 # check the equations have solved
 #HHparams = (wbar, rbar, sig, chin, chib, b, ups, bet, S, printcheck)
 c1opt = opt.fsolve(findc1, .1, args=HHparams)

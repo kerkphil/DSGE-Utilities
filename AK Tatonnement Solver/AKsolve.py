@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Jan 28 13:31:47 2017
-
-@author: Kerk
+Updated on Mon Oct 4 15:14 2017
+@author: Kerk Phillips
 """
 import numpy as np
 
@@ -48,7 +48,7 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
     # set counter
     count = 0
     # begin AK iterations
-    print("Performing AK contraction mapping")
+    print('Performing AK contraction mapping')
     while dist > ccrit:
         if count > maxiter:
             break
@@ -81,6 +81,6 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
             distold = dist
         # show progress
         if display:
-            print("count: ", count, "distance: ", dist, "damp: ", damp)
+            print ('count: ', count, 'distance: ', dist, 'damp: ', damp)
     
     return Xvalue, dist, count

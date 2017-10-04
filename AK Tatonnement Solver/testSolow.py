@@ -37,7 +37,7 @@ Xfixed, distance, count = AKsolve(1.0, example, fparams, ccrit, conv, maxiter, s
 # find closed form solution for SS value
 Xbar = (gamma/delta)**(1/(1-alpha))
 
-print 'Xfixed:    ', Xfixed
-print 'Xbar       ', Xbar
-print 'distance:  ', distance
-print 'iterations:', count
+print('Xfixed:    ', Xfixed)
+print('Xbar       ', Xbar)
+print('distance:  ', distance)
+print('iterations:', count)
