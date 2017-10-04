@@ -48,7 +48,7 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
     # set counter
     count = 0
     # begin AK iterations
-    print "Performing AK contraction mapping"
+    print("Performing AK contraction mapping")
     while dist > ccrit:
         if count > maxiter:
             break
@@ -81,6 +81,6 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
             distold = dist
         # show progress
         if display:
-            print "count: ", count, "distance: ", dist, "damp: ", damp
+            print("count: ", count, "distance: ", dist, "damp: ", damp)
     
     return Xvalue, dist, count
