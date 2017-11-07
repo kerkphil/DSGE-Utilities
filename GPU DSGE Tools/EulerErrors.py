@@ -21,7 +21,7 @@ def EEcalc(Xdata, Zdata, efunc, epars, tfunc, tpars, lfunc, lpars):
         columns.
     3)  efunc: the name of a function which takes a single observation of data 
         and returns the Euler error for a given realization of future exogenous 
-        variables.  This function must take 3 nx-element vectors of endogenous
+        variables.  This function must take 3 nx-element vectora of endogenous
         state variables and and 2 nz-element vector of exogenous state 
         variables as inputs and output an neq-element vector of Euler equation 
         errors.  The order of input is X(t+2), X(t+1), X(t), Z(t+1), Z(t),
@@ -50,14 +50,14 @@ def EEcalc(Xdata, Zdata, efunc, epars, tfunc, tpars, lfunc, lpars):
         
     Notes:
     Xdata and Zdata must have the same number of rows.
-    Neither Xdata nor Zdata may have missing, nan, or complex values. 
-    Innovations to the law of motion are drawn from a standard normal 
+    Neither Xdata nor Zdatamay have missing, nan, or complex values. 
+    Innovations to the law of motion are drawn from a tandard normal 
     distribution.
     Currently this function only works with one innovation shock, i.e. ne=1
 
     To Do:
-    1) Allow for more than one shock process.  May require the use of sparse 
-    grids for quadrature.
+    1) Allow for more than one shock process.  May require the use of sparse grids 
+    for quadrature.
     2) Use a more efficient quadrature method.  Gaussian?
     '''
     
@@ -70,7 +70,7 @@ def EEcalc(Xdata, Zdata, efunc, epars, tfunc, tpars, lfunc, lpars):
     if Xnobs == Znobs:
         nobs = Xnobs
     else:
-        print ('Data matrices have different numbers of observations')
+        print 'Data matrices have different numbers of observations'
         nobs = min(Xnobs, Znobs)
         Xdata = Xdata[0:nobs]
         Zdata = Zdata[0:nobs]
