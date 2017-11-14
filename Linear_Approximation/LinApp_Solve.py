@@ -483,6 +483,38 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     
     # then the Uhlig's way
     else:
+        '''
+        # This code is from Spencer Lypn's 2012 version
+        q_eqns = sp.shape(FF)[0]
+        m_states = sp.shape(FF)[1]
+        l_equ = sp.shape(CC)[0]
+        n_endog = sp.shape(CC)[1]
+        k_exog = min(sp.shape(sp.mat(NN))[0], sp.shape(sp.mat(NN))[1])
+        sp.mat(LL.T)
+        sp.mat(NN)
+        sp.dot(sp.mat(LL),sp.mat(NN))
+        LLNN_plus_MM = sp.dot(sp.mat(LL),sp.mat(NN)) + sp.mat(MM.T)
+        QQSS_vec = sp.dot(la.inv(sp.mat(VV)), sp.mat(LLNN_plus_MM))
+        QQSS_vec = -QQSS_vec
+        if max(abs(QQSS_vec)) == sp.inf:
+            print("We have issues with Q and S. Entries are undefined. Probably because V is no inverible.")
+        
+        QQ = sp.reshape(QQSS_vec[0:m_states*k_exog],(m_states,k_exog))
+        SS = sp.reshape(QQSS_vec[(m_states*k_exog):((m_states+n_endog)*k_exog)],(n_endog,k_exog))
+        
+        # The vstack and hstack's below are ugly, but safe. If you have issues with WW uncomment the first definition and comment out the second one.
+        #WW = sp.vstack((\
+        #sp.hstack((sp.eye(m_states), sp.zeros((m_states,k_exog)))),\
+        #sp.hstack((sp.dot(RR,sp.pinv(PP)), (SS-sp.dot(sp.dot(RR,sp.pinv(PP)),QQ)))),\
+        #sp.hstack((sp.zeros((k_exog,m_states)),sp.eye(k_exog)))))
+        
+        WW = sp.array([[sp.eye(m_states), sp.zeros((m_states,k_exog))],\
+        [sp.dot(RR,la.pinv(PP)), (SS-sp.dot(sp.dot(RR,la.pinv(PP)),QQ))],\
+        [sp.zeros((k_exog,m_states)),sp.eye(k_exog)]])
+    
+        '''
+        
+        # this code is from Yulong Li's 2015 version
         if (npla.matrix_rank(VV) < nz * (nx + ny)):
             print("Sorry but V is not invertible. Can't solve for Q and S;"+
                      " but we proceed anyways...")
@@ -492,11 +524,12 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         LLNN_plus_MM = dot(LL, NN) + MM
 
         if DD.any():
-            impvec = vstack([DD, np.reshape(LLNN_plus_MM,
-                                                  (nx * nz, 1), 'F')])
+            impvec = vstack([DD, LLNN_plus_MM])
         else:
-            impvec = np.reshape(LLNN_plus_MM, (nx * nz, 1), 'F')
+            impvec = LLNN_plus_MM
 
+        impvec = np.reshape(impvec, ((nx + ny) * nz, 1), 'F')
+        
         QQSS_vec = np.matrix(la.solve(-VV, impvec))
 
         if (max(abs(QQSS_vec)) == sp.inf).any():
@@ -509,5 +542,6 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
 
         SS = np.reshape(QQSS_vec[(nx * nz):((nx + ny) * nz), 0],\
                             (ny, nz), 'F')
+        
 
     return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)

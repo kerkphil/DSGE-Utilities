@@ -67,7 +67,7 @@ def LinApp_SSL(X0, Z, XYbar, logX, PP, QQ, RR, SS):
     Ybar = XYbar[nx:nx+ny]
 
     # Generate a history of X's and Y's
-    X = zeros((nobs+1,nx))
+    X = zeros((nobs,nx))
     Y = zeros((nobs,ny))
     Xtil = zeros((nobs,nx))
     Ytil = zeros((nobs,ny))
@@ -79,9 +79,9 @@ def LinApp_SSL(X0, Z, XYbar, logX, PP, QQ, RR, SS):
         Xtil[0,:] = X0 - Xbar
 
     # simulate
-    for t in range(0, nobs):
+    for t in range(0, nobs-1):
         Xtemp, Ytemp = LinApp_Sim(Xtil[t,:], Z[t,:], PP, QQ, RR, SS)
-        Xtil[t,:] = Xtemp
+        Xtil[t+1,:] = Xtemp
         if ny>0:
             Ytil[t,:] = Ytemp
         
@@ -95,8 +95,7 @@ def LinApp_SSL(X0, Z, XYbar, logX, PP, QQ, RR, SS):
         if ny>0:
             Y = tile(Ybar,(nobs,1))+Ytil
             
-    # Delete last observation in X
-    X = X[0:nobs, :]
+    print(Y.shape)
 
     return X, Y #Note if ny=0, Y is a nobs by 0 empty matrix 
     

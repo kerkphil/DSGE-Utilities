@@ -49,7 +49,7 @@ def example_dyn(invec, param):
         example_def(kplus, know, ellplus, zplus, xplus, param)
 
     # calculate Gamma function
-    Gamma1 = cnow**(-theta)*wnow - ellnow**lambd
+    Gamma1 = cnow**(-theta)*wnow - chi*ellnow**lambd
     Gamma2 = cnow**(-theta) - \
         beta*cplus**(-theta)*(1+rplus-delta)/((1+g)**theta*(1+rho))
         
@@ -63,13 +63,14 @@ delta = .08
 alpha = .33
 theta = 2.5
 lambd = .33
+chi = 1.
 rho = .05
 phi_z = .9
 sigma_z = .0075
 phi_x = .9
 sigma_x = .0075
 beta = (1+g)**(1-theta)*(1+n)/(1+rho)
-param = [g, n, delta, alpha, theta, lambd, rho, phi_z, sigma_z, phi_x, \
+param = [g, n, delta, alpha, theta, lambd, chi, rho, phi_z, sigma_z, phi_x, \
          sigma_x, beta]
 # soution algorithm paramteres
 nx = 1
@@ -87,7 +88,7 @@ solve = 1       # set to 1 to compute coeffs, 0 if coeffs already in memory
 
 if solve == 1:
     # calculate steady state values
-    guessXY = np.array([1., .1])
+    guessXY = np.array([10., .5])
     bar = LinApp_FindSS(example_dyn, param, guessXY, Zbar, nx, ny)
     [kbar, ellbar] = bar
     print ('kbar value is ', kbar)
@@ -150,13 +151,14 @@ for t in range(0, nobs):
 Z = np.vstack((z, x))
 Z = Z.T
     
-k, ell = LinApp_SSL(kstart*kbar, Z, kbar, logX, PP, QQ, RR, SS)
+k, ell = LinApp_SSL(kstart*kbar, Z, bar, logX, PP, QQ, RR, SS)
 for t in range(0, nobs):
-    y[t], c[t], i[t], r[t], w[t] = example_def(k[t+1], k[t], ell[t], z[t], \
-        x[t], param)
+    y[t], c[t], i[t], r[t], w[t] = example_def(k[t+1,0], k[t,0], ell[t,0], \
+        z[t], x[t], param)
     
-# delete last observation for k and z
+# delete last observation for X and Z
 k = k[0:nobs]
+ell = ell[0:nobs]
 z = z[0:nobs]
 x = x[0:nobs]
 
