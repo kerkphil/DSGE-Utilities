@@ -166,7 +166,7 @@ def qzdiv(stake, A, B, Q, Z):
     return A, B, Q, Z
 
 
-def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
+def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     """
     This code takes Uhlig's original code and puts it in the form of a
     function.  This version outputs the policy function coefficients: PP,
@@ -224,12 +224,6 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
         The matrix represetned above by :math:`M`. It is the matrix of
         derivatives of the model's characterizing equations with
         respect to :math:`Z_t`
-    WWW : array, dtype=float, shape=(ny,)
-        The vector of the numberial errors of first ny characterizing
-        equations
-    TT : array, dtype=float, shape=(nx,)
-        The vector of the numberial errors of the next nx characterizing
-        equations following the first ny equations
     NN : array_like, dtype=float, shape=(nz, nz)
         The autocorrelation matrix for the exogenous state vector z.
     Z0 : array, dtype=float, shape=(nz,)
@@ -249,16 +243,13 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
     Q : 2D-array, dtype=float, shape=(nx, nz)
         The matrix :math:`Q` in the law of motion for exogenous state
         variables described above.
-    U : array, dtype=float, shape=(nx,)
-        ??????????
     R : 2D-array, dtype=float, shape=(ny, nx)
         The matrix :math:`R` in the law of motion for endogenous state
         variables described above.
     S : 2D-array, dtype=float, shape=(ny, nz)
         The matrix :math:`S` in the law of motion for exogenous state
         variables described above.
-    V : array, dtype=float, shape=(ny,)
-        ???????????
+        
     References
     ----------
     .. [1] Uhlig, H. (1999): "A toolkit for analyzing nonlinear dynamic
@@ -281,8 +272,6 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
     LL = np.matrix(LL)
     MM = np.matrix(MM)
     NN = np.matrix(NN)
-    WWW = np.array(WWW)
-    TT = np.array(TT)
     Z0 = np.array(Z0)
     #Tolerance level to use
     TOL = .000001
@@ -521,34 +510,4 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
         SS = np.reshape(QQSS_vec[(nx * nz):((nx + ny) * nz), 0],\
                             (ny, nz), 'F')
 
-    #Build WW - WW has the property [x(t)',y(t)',z(t)']=WW [x(t)',z(t)'].
-    WW = sp.vstack((
-        hstack((eye(nx), zeros((nx, nz)))),
-        hstack((dot(RR, la.pinv(PP)), (SS - dot(dot(RR, la.pinv(PP)), QQ)))),
-        hstack((zeros((nz, nx)), eye(nz)))))
-
-    # find constant terms
-    # redefine matrix to be 2D-array for generating vectors UU and VVV
-    AA = np.array(AA)
-    CC = np.array(CC)
-    FF = np.array(FF)
-    GG = np.array(GG)
-    JJ = np.array(JJ)
-    KK = np.array(KK)
-    LL = np.array(LL)
-    NN = np.array(NN)
-    RR = np.array(RR)
-    QQ = np.array(QQ)
-    SS = np.array(SS)
-    if ny>0:
-        UU1 = -(FF.dot(PP)+GG+JJ.dot(RR)+FF-(JJ+KK).dot(la.solve(CC,AA)))
-        UU2 = (TT+(FF.dot(QQ)+JJ.dot(SS)+LL).dot(NN.dot(Z0)-Z0)- \
-            (JJ+KK).dot(la.solve(CC,WWW)))
-        UU = la.solve(UU1, UU2)
-        VVV = la.solve(- CC, (WWW+AA.dot(UU)) )
-    else:
-        UU = la.solve( -(FF.dot(PP)+FF+GG), (TT+(FF.dot(QQ)+LL).dot(NN.dot(Z0)-Z0)) )
-        VVV = np.array([])
-
-    return np.array(PP), np.array(QQ), np.array(UU), np.array(RR), np.array(SS),\
-             np.array(VVV)
+    return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)

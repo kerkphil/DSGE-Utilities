@@ -6,7 +6,7 @@ Adapted by Yulong Li, November 2015
 from __future__ import division
 import numpy as np
 
-def LinApp_Sim(Xm,Z,PP,QQ,UU,RR,SS,VV):
+def LinApp_Sim(Xm, Z, PP, QQ, RR, SS):
     '''
     Uses the coefficients from a linear approximation to generate data for
     next period given today's state. The set of endogenous state variables 
@@ -34,17 +34,11 @@ def LinApp_Sim(Xm,Z,PP,QQ,UU,RR,SS,VV):
     QQ: 2D-array, dtype=float
         nx-by-nz  matrix of Z(t) on X(t) coefficients
 
-    UU: array, dtype=float
-        nx vector of X(t) constants
-
     RR: 2D-array, dtype=float
         ny-by-nx  matrix of X(t-1) on Y(t) coefficients
 
     SS: 2D-array, dtype=float
         ny-by-nz  matrix of Z(t) on Y(t) coefficients
-
-    VV: array, dtype=float
-        ny vector of Y(t) constants
 
     Returns
     --------
@@ -81,10 +75,11 @@ def LinApp_Sim(Xm,Z,PP,QQ,UU,RR,SS,VV):
                 print('dimensions of QQ incorrect')
 
             # Generate data for next period, one equation at a time
-            X = PP.dot(Xm) + QQ.dot(Z) + UU
+            X = PP.dot(Xm) + QQ.dot(Z)
 
             if ny>0:
-                Y = RR.dot(Xm) + SS.dot(Z) + VV
+                Y = RR.dot(Xm) + SS.dot(Z)
             else:
                 Y = []
+                
     return np.array(X), np.array(Y)
