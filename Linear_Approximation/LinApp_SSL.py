@@ -94,8 +94,6 @@ def LinApp_SSL(X0, Z, XYbar, logX, PP, QQ, RR, SS):
         X = tile(Xbar,(nobs,1))+Xtil
         if ny>0:
             Y = tile(Ybar,(nobs,1))+Ytil
-            
-    print(Y.shape)
 
     return X, Y #Note if ny=0, Y is a nobs by 0 empty matrix 
     
