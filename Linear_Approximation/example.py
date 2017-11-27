@@ -16,10 +16,7 @@ The Euler equation is given in the example_dyn function
 
 import numpy as np
 import matplotlib.pyplot as plt
-from LinApp_FindSS import LinApp_FindSS
-from LinApp_Deriv import LinApp_Deriv
-from LinApp_Solve import LinApp_Solve 
-from LinApp_SSL import LinApp_SSL 
+from LinApp import LinApp_FindSS, LinApp_Deriv, LinApp_Solve, LinApp_SSL 
 
 def example_def(kp, k, z, param):
 	# calculate definitions
@@ -114,7 +111,7 @@ z[0] = eps[0]
 for t in range(0, nobs):
     z[t+1,:] = phi*z[t,:] + eps[t]
     
-k, blank = LinApp_SSL(kstart*kbar, z, kbar, logX, PP, QQ, 0., RR, SS)
+k, blank = LinApp_SSL(kstart*kbar, z, kbar, logX, PP, QQ, RR, SS)
 for t in range(0, nobs):
     y[t], c[t], i[t], r[t], w[t] = example_def(k[t+1], k[t], z[t], param)
     
