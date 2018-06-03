@@ -523,7 +523,7 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         NN = sp.mat(NN)
         LLNN_plus_MM = dot(LL, NN) + MM
 
-        if DD.any():
+        if ny>0:
             impvec = vstack([DD, LLNN_plus_MM])
         else:
             impvec = LLNN_plus_MM
