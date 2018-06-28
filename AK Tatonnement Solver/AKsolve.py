@@ -72,7 +72,7 @@ def AKsolve(Xguess, funcname, fparams, ccrit, damp, maxiter, shrinkon, \
             if expandon:
                 # expand damp if it is < 1.0
                 if damp < 1.0:
-                    damp = damp * 1.01
+                    damp = damp * expand
                 else:
                     damp = 1.0
             # take convex combination for new guess
