@@ -100,6 +100,6 @@ data = data[1:nobs,:] - data[0:nobs-1,:]
 
 
 moms, momnames = calcmom(data,means=True, cvars=True)
-print moms
+print(moms)
 table = pd.DataFrame(moms, index = momnames, columns = varnames) 
 table.to_csv('DSGEmoments.csv')

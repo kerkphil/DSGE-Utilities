@@ -33,7 +33,7 @@ def _nullSpaceBasis(A):
     If A is an empty matrix, an empty matrix is returned.
 
     """
-    if A:
+    if A.any():
         U, s, Vh = la.svd(A)
         vecs = np.array([])
         toAppend = A.shape[1] - s.size
@@ -97,7 +97,7 @@ def qzswitch(i, A, B, Q, Z):
     m = np.sqrt(dot(xy,xy.conj().T))
     
     if n == 0:
-        print "qzswitch(): Inputs unchanged!"
+        print ("qzswitch(): Inputs unchanged!")
         return A, B, Q, Z
     else:
        wz = wz/n
@@ -149,16 +149,16 @@ def qzdiv(stake, A, B, Q, Z):
     tmp = (root[:,0]<1.e-13).astype(int)
     root[:,0] = root[:,0]- tmp *(root[:,0]+root[:,1])
     root[:,1] = root[:,1]/root[:,0]
-    for i in xrange(n,0,-1):
+    for i in range(n,0,-1):
         m=0
-        for j in xrange(i,0,-1):
+        for j in range(i,0,-1):
             if (root[j-1,1] > stake or root[j-1,1] < -.1):
                 m=j
                 break
         if m==0:
-            print "qzdiv(): Inputs unchanged!"
+            print ("qzdiv(): Inputs unchanged!")
             return A, B, Q, Z
-        for k in xrange(m,i,1):
+        for k in range(m,i,1):
             A, B, Q, Z = qzswitch(k,A,B,Q,Z)
             tmp = root[k-1,1]
             root[k-1,1] = root[k,1]
@@ -166,7 +166,7 @@ def qzdiv(stake, A, B, Q, Z):
     return A, B, Q, Z
 
 
-def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
+def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     """
     This code takes Uhlig's original code and puts it in the form of a
     function.  This version outputs the policy function coefficients: PP,
@@ -224,12 +224,6 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
         The matrix represetned above by :math:`M`. It is the matrix of
         derivatives of the model's characterizing equations with
         respect to :math:`Z_t`
-    WWW : array, dtype=float, shape=(ny,)
-        The vector of the numberial errors of first ny characterizing
-        equations
-    TT : array, dtype=float, shape=(nx,)
-        The vector of the numberial errors of the next nx characterizing
-        equations following the first ny equations
     NN : array_like, dtype=float, shape=(nz, nz)
         The autocorrelation matrix for the exogenous state vector z.
     Z0 : array, dtype=float, shape=(nz,)
@@ -249,16 +243,13 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
     Q : 2D-array, dtype=float, shape=(nx, nz)
         The matrix :math:`Q` in the law of motion for exogenous state
         variables described above.
-    U : array, dtype=float, shape=(nx,)
-        ??????????
     R : 2D-array, dtype=float, shape=(ny, nx)
         The matrix :math:`R` in the law of motion for endogenous state
         variables described above.
     S : 2D-array, dtype=float, shape=(ny, nz)
         The matrix :math:`S` in the law of motion for exogenous state
         variables described above.
-    V : array, dtype=float, shape=(ny,)
-        ???????????
+        
     References
     ----------
     .. [1] Uhlig, H. (1999): "A toolkit for analyzing nonlinear dynamic
@@ -281,8 +272,6 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
     LL = np.matrix(LL)
     MM = np.matrix(MM)
     NN = np.matrix(NN)
-    WWW = np.array(WWW)
-    TT = np.array(TT)
     Z0 = np.array(Z0)
     #Tolerance level to use
     TOL = .000001
@@ -400,7 +389,7 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
                 else:
                     print("Dropping the lowest real eigenvalue. Beware of" +
                           " sunspots!")
-                    for i in xrange(drop_index,nx+1):
+                    for i in range(drop_index,nx+1):
                         Delta_up,Xi_up,UUU,VVV = qzswitch(i,Delta_up,Xi_up,UUU,VVV)
                     Xi_select1 = np.arange(0,drop_index-1)
                     Xi_select = np.append(Xi_select1, np.arange(drop_index,nx+1))
@@ -463,18 +452,18 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
 
     # Now we use LL, NN, RR, VV to get the QQ, RR, SS, VV matrices.
     # first try using Sylvester equation solver
-    if ny>0:
-        PM = (FF-la.solve(JJ.dot(CC),AA))
-        if npla.matrix_rank(PM)< nx+ny:
-            Sylv=0
-            print("Sylvester equation solver condition is not satisfied;"\
-                    +" proceed with the original method...")
-    else:
-        if npla.matrix_rank(FF)< nx:
-            Sylv=0
-            print("Sylvester equation solver condition is not satisfied;"\
-                    +" proceed with the original method...")
     if Sylv:
+        if ny>0:
+            PM = (FF-la.solve(JJ.dot(CC),AA))
+            if npla.matrix_rank(PM)< nx+ny:
+                Sylv=0
+                print("Sylvester equation solver condition is not satisfied;"\
+                        +" proceed with the original method...")
+        else:
+            if npla.matrix_rank(FF)< nx:
+                Sylv=0
+                print("Sylvester equation solver condition is not satisfied;"\
+                        +" proceed with the original method...")
         print("Using Sylvester equation solver...")
         if ny>0:
             Anew = la.solve(PM, (FF.dot(PP)+GG+JJ.dot(RR)-\
@@ -491,8 +480,41 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
             Cnew = la.solve(FF, (-LL.dot(NN)-MM))
             QQ = la.solve_sylvester(Anew,Bnew,Cnew)
             SS = np.zeros((0,nz)) #empty matrix
+    
     # then the Uhlig's way
     else:
+        '''
+        # This code is from Spencer Lypn's 2012 version
+        q_eqns = sp.shape(FF)[0]
+        m_states = sp.shape(FF)[1]
+        l_equ = sp.shape(CC)[0]
+        n_endog = sp.shape(CC)[1]
+        k_exog = min(sp.shape(sp.mat(NN))[0], sp.shape(sp.mat(NN))[1])
+        sp.mat(LL.T)
+        sp.mat(NN)
+        sp.dot(sp.mat(LL),sp.mat(NN))
+        LLNN_plus_MM = sp.dot(sp.mat(LL),sp.mat(NN)) + sp.mat(MM.T)
+        QQSS_vec = sp.dot(la.inv(sp.mat(VV)), sp.mat(LLNN_plus_MM))
+        QQSS_vec = -QQSS_vec
+        if max(abs(QQSS_vec)) == sp.inf:
+            print("We have issues with Q and S. Entries are undefined. Probably because V is no inverible.")
+        
+        QQ = sp.reshape(QQSS_vec[0:m_states*k_exog],(m_states,k_exog))
+        SS = sp.reshape(QQSS_vec[(m_states*k_exog):((m_states+n_endog)*k_exog)],(n_endog,k_exog))
+        
+        # The vstack and hstack's below are ugly, but safe. If you have issues with WW uncomment the first definition and comment out the second one.
+        #WW = sp.vstack((\
+        #sp.hstack((sp.eye(m_states), sp.zeros((m_states,k_exog)))),\
+        #sp.hstack((sp.dot(RR,sp.pinv(PP)), (SS-sp.dot(sp.dot(RR,sp.pinv(PP)),QQ)))),\
+        #sp.hstack((sp.zeros((k_exog,m_states)),sp.eye(k_exog)))))
+        
+        WW = sp.array([[sp.eye(m_states), sp.zeros((m_states,k_exog))],\
+        [sp.dot(RR,la.pinv(PP)), (SS-sp.dot(sp.dot(RR,la.pinv(PP)),QQ))],\
+        [sp.zeros((k_exog,m_states)),sp.eye(k_exog)]])
+    
+        '''
+        
+        # this code is from Yulong Li's 2015 version
         if (npla.matrix_rank(VV) < nz * (nx + ny)):
             print("Sorry but V is not invertible. Can't solve for Q and S;"+
                      " but we proceed anyways...")
@@ -501,12 +523,13 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
         NN = sp.mat(NN)
         LLNN_plus_MM = dot(LL, NN) + MM
 
-        if DD.any():
-            impvec = vstack([DD.T, np.reshape(LLNN_plus_MM,
-                                                  (nx * nz, 1), 'F')])
+        if ny>0:
+            impvec = vstack([DD, LLNN_plus_MM])
         else:
-            impvec = np.reshape(LLNN_plus_MM, (nx * nz, 1), 'F')
+            impvec = LLNN_plus_MM
 
+        impvec = np.reshape(impvec, ((nx + ny) * nz, 1), 'F')
+        
         QQSS_vec = np.matrix(la.solve(-VV, impvec))
 
         if (max(abs(QQSS_vec)) == sp.inf).any():
@@ -519,35 +542,6 @@ def LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WWW,TT,NN,Z0,Sylv):
 
         SS = np.reshape(QQSS_vec[(nx * nz):((nx + ny) * nz), 0],\
                             (ny, nz), 'F')
+        
 
-    #Build WW - WW has the property [x(t)',y(t)',z(t)']=WW [x(t)',z(t)'].
-    WW = sp.vstack((
-        hstack((eye(nx), zeros((nx, nz)))),
-        hstack((dot(RR, la.pinv(PP)), (SS - dot(dot(RR, la.pinv(PP)), QQ)))),
-        hstack((zeros((nz, nx)), eye(nz)))))
-
-    # find constant terms
-    # redefine matrix to be 2D-array for generating vectors UU and VVV
-    AA = np.array(AA)
-    CC = np.array(CC)
-    FF = np.array(FF)
-    GG = np.array(GG)
-    JJ = np.array(JJ)
-    KK = np.array(KK)
-    LL = np.array(LL)
-    NN = np.array(NN)
-    RR = np.array(RR)
-    QQ = np.array(QQ)
-    SS = np.array(SS)
-    if ny>0:
-        UU1 = -(FF.dot(PP)+GG+JJ.dot(RR)+FF-(JJ+KK).dot(la.solve(CC,AA)))
-        UU2 = (TT+(FF.dot(QQ)+JJ.dot(SS)+LL).dot(NN.dot(Z0)-Z0)- \
-            (JJ+KK).dot(la.solve(CC,WWW)))
-        UU = la.solve(UU1, UU2)
-        VVV = la.solve(- CC, (WWW+AA.dot(UU)) )
-    else:
-        UU = la.solve( -(FF.dot(PP)+FF+GG), (TT+(FF.dot(QQ)+LL).dot(NN.dot(Z0)-Z0)) )
-        VVV = np.array([])
-
-    return np.array(PP), np.array(QQ), np.array(UU), np.array(RR), np.array(SS),\
-             np.array(VVV)
+    return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)

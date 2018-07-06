@@ -31,8 +31,8 @@ alpha = .33
 fparams = {delta, gamma, alpha}
 
 # Use AK method to find fixed point
-Xfixed, distance, count = AKsolve(1.0, example, fparams, ccrit, conv, maxiter, shrinkon, \
-    shrink, expandon, expand, disttype, display)
+Xfixed, distance, count = AKsolve(1.0, example, fparams, ccrit, conv, \
+    maxiter, shrinkon, shrink, expandon, expand, disttype, display)
     
 # find closed form solution for SS value
 Xbar = (gamma/delta)**(1/(1-alpha))

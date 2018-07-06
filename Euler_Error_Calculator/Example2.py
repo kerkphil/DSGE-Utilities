@@ -127,7 +127,7 @@ if solve == 1:
     value = np.zeros((nptsz,nptsk));
     newval = np.zeros((nptsz,nptsk));
     trans = np.zeros((nptsz,nptsk));
-    print count, distance
+    print(count, distance)
     while distance > converge:
         count = count + 1
         if count > maxwhile:
@@ -246,7 +246,7 @@ MaxAbsEE = np.max(np.abs(EErrs))
 MeanAbsEE = np.mean(np.abs(EErrs))
 RootMeanSqEE = (np.mean(EErrs**2))**.5
 
-print 'Euler Error Summary Statistics'
-print 'Maximum Absolute Euler Error:', MaxAbsEE
-print 'Mean Absolute Euler Error:', MeanAbsEE
-print 'Root Mean Squared Euler Error:', RootMeanSqEE
+print('Euler Error Summary Statistics')
+print('Maximum Absolute Euler Error:', MaxAbsEE)
+print('Mean Absolute Euler Error:', MeanAbsEE)
+print('Root Mean Squared Euler Error:', RootMeanSqEE)

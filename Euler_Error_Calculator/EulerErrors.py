@@ -70,7 +70,7 @@ def EEcalc(Xdata, Zdata, efunc, epars, tfunc, tpars, lfunc, lpars):
     if Xnobs == Znobs:
         nobs = Xnobs
     else:
-        print ('Data matrices have different numbers of observations')
+        print('Data matrices have different numbers of observations')
         nobs = min(Xnobs, Znobs)
         Xdata = Xdata[0:nobs]
         Zdata = Zdata[0:nobs]

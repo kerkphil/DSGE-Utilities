@@ -87,15 +87,15 @@ reportbar = np.array([[ybar],[cbar],[ibar],[kbar],[wbar],[rbar]])
 # check SS values
 invec = np.array([kbar, kbar, kbar, 0, 0])
 check = example_dyn(invec, param)
-print 'SS check', check
+print('SS check', check)
 
 # find derivatives
-AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, WW, TT = \
+AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM = \
     LinApp_Deriv(example_dyn,param,invec,1,0,1,0);
 
 # find policy function coefficients
 PP, QQ, UU, RR, SS, VV = \
-    LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,WW,TT,phi,0,1);
+    LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,phi,0,1);
 
 # perform simulation
 tpars = (PP, QQ, kbar)
@@ -130,7 +130,7 @@ MaxAbsEE = np.max(np.abs(EErrs))
 MeanAbsEE = np.mean(np.abs(EErrs))
 RootMeanSqEE = (np.mean(EErrs**2))**.5
 
-print 'Euler Error Summary Statistics'
-print 'Maximum Absolute Euler Error:', MaxAbsEE
-print 'Mean Absolute Euler Error:', MeanAbsEE
-print 'Root Mean Squared Euler Error:', RootMeanSqEE
+print('Euler Error Summary Statistics')
+print('Maximum Absolute Euler Error:', MaxAbsEE)
+print('Mean Absolute Euler Error:', MeanAbsEE)
+print('Root Mean Squared Euler Error:', RootMeanSqEE)
