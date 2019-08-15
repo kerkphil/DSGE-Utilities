@@ -10,8 +10,7 @@ the steady state.
 
 """
 import numpy as np
-from LinApp_Deriv import LinApp_Deriv
-from LinApp_Solve import LinApp_Solve
+from LinApp import LinApp_Deriv, LinApp_Solve
 from EulerErrors import EEcalc
     
 def example_def(kp, k, z, param):
@@ -94,7 +93,7 @@ AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM = \
     LinApp_Deriv(example_dyn,param,invec,1,0,1,0);
 
 # find policy function coefficients
-PP, QQ, UU, RR, SS, VV = \
+PP, QQ, RR, SS = \
     LinApp_Solve(AA,BB,CC,DD,FF,GG,HH,JJ,KK,LL,MM,phi,0,1);
 
 # perform simulation

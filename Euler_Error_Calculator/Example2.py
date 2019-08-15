@@ -3,6 +3,7 @@
 Version 1.0
 Mon Nov 28 2016
 @author: Kerk L. Phillips
+
 The code below is for demonstrating how to implement the EEcalc function for a 
 simple RBC model that is solved and simulated using value-function iteration
 on a grid.
@@ -156,7 +157,7 @@ if solve == 1:
                         trans[i,j] = kvec[l]
         # print newval
         distance = np.mean(np.abs(value/newval - 1.0))
-        print count, distance
+        print(count, distance)
         for i in range(0, nptsz):
             for j in range(0, nptsk):
                 value[i,j] = newval[i,j]
@@ -212,7 +213,7 @@ if solve == 1:
             
     # calcuate R-squared
     Rsq = 1 - np.sum((trans-tpoly)**2)/np.sum(trans**2)
-    print 'R-squared', Rsq
+    print('R-squared', Rsq)
 
 # perform simulation
 eps = np.random.randn(nobs)*sigma

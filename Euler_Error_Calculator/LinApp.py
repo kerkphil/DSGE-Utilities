@@ -1,18 +1,165 @@
-"""
-MATLAB version 1.1 written by Kerk Phillips, April 2014
+'''
+MATLAB version 1.0 written by Kerk Phillips, April 2014
 
 PYTHON version adapted by Yulong Li, November 2015 
 
-This PYTHON version was also based on the previous adaptations of 
-Uhlig's Toolkit (1999) by Spencer Lyon in May 2012 and later Chase Coleman
+updates 20 Nov 2017 by Kerk Phillips
+'''
 
-"""
-from __future__ import division
-import scipy as sp
 import numpy as np
-from numpy import hstack, vstack, zeros, dot, eye, kron
+import scipy as sp
+import scipy.optimize as opt
+from numpy import tile, array, zeros, log, exp, hstack, vstack, dot, eye, kron
 from scipy import linalg as la
 from numpy import linalg as npla
+
+
+def steady(XYbar, Zbar, funcname, param, nx, ny):
+	Xbar = XYbar[0:nx]
+	Ybar = XYbar[nx:nx+ny]
+	Zbar = np.array(Zbar)
+	if ny==0:
+		In = np.concatenate((Xbar, Xbar, Xbar, Zbar, Zbar))
+	else:
+		In = np.concatenate((Xbar, Xbar, Xbar, Ybar, Ybar, Zbar, Zbar))
+	In = np.concatenate((Xbar, Xbar, Xbar, Ybar, Ybar, Zbar, Zbar))
+	Out = funcname(In, param)
+	return Out
+
+
+def LinApp_FindSS(funcname, param, guessXY, Zbar, nx, ny):
+#	'''
+#	Finds the steady state for a DSGE model numerically
+#
+#	Parameters
+#    -----------
+#    funcname: function
+#    the name of the function which generates a column vector 
+#    from ny+nx dynamic equations.
+#		The ny equations to be linearized into the form below in the first 
+#		ny rows.
+#		A X(t) + B X(t-1) + C Y(t) + D Z(t) = 0 
+#		The function must be written so as to evaluate to zero for all rows
+#		in the steady state.
+#
+#	param: array, dtype=float
+#		a vector of parameter values to be passed to funcname.
+#	
+#	guessXY: array, dtype=float
+#		guess for the steady state values of X and Y
+#	
+#	Zbar: array, dtype=float
+#		nz vector of Z steady state values
+#	
+#	nx: number, dtype=int
+#		number of X variables
+#	
+#	ny: number, dtype=int
+#		number of Y variables
+#
+#	Returns
+#    --------
+#	XYbar: array, dtype=float
+#		1-by-(nx+ny) vector of X and Y steady state values, with the X
+#		values in positions 1 - nx and the Y values in nx+1 - nx+ny.
+#	'''
+    f = lambda XYbar: steady(XYbar, Zbar, funcname, param, nx, ny)
+    XYbar = opt.fsolve(f, guessXY)
+
+    return XYbar
+
+
+#------------------------------------------------------------------------------
+
+def LinApp_Deriv(funcname, param, theta0, nx, ny, nz, logX):
+    """
+    This function computes the matricies AA-MM in the log-linearization of
+    the equations in the function 'func'.
+
+    Parameters
+    ----------
+    func: function
+        The function that generates a vector from the dynamic equations that 
+        are to be linearized. This must be written to evaluate to zero in the
+        steady state. Often these equations are the Euler equations defining
+        the model
+
+    theta0: array, dtype=float
+        A vector of steady state values for state parameters. Place the values
+        of X in the front, then the Y values, followed by the Z's.
+
+    nx: number, dtype=int
+        The number of elements in X
+
+    ny: number, dtype=nt
+        The number of elements in Y
+
+    nz: number, dtype=int
+        The number of elements in Z
+
+    logX: binary, dtype=int
+        true if log-linearizing the X & Y variables, false for simple linearization
+
+    Returns
+    -------
+    AA - MM : 2D-array, dtype=float:
+        The equaitons described by Uhlig in the log-linearization.
+    """
+    # calculate of derivative matrix
+    length = 3 * nx + 2 * (ny + nz)
+    height = nx + ny
+    
+    # set vaue for epsilon
+    # eps = 2.2E-16  # machine epsilon for double-precision
+    eps = 10E-6
+
+    # Constant term, T0, should be very close to zero if linearizing about SS
+    T0 = funcname(theta0, param)  
+    
+    # set up plus and minus deviations matrices, disturb each input one-by-one
+    devplus = np.tile(theta0.reshape(1, theta0.size), (length, 1))
+    devminus = np.tile(theta0.reshape(1, theta0.size), (length, 1))
+    for i in range(length):
+        devplus[i, i] += eps
+        devminus[i, i] -= eps
+        
+    # initialize first derivative  matrix
+    dGammaMat = np.zeros((height,length))
+    
+    # find first derivatives
+    for i in range(0,length):
+        if i < 3 * nx + 2 * ny:
+            if logX:
+                dGammaMat[:,i] = \
+                (theta0[i]*(funcname(devplus[i, :], param)-T0)/(1.0+T0) \
+                - theta0[i]*(funcname(devminus[i, :], param)-T0)/(1.0+T0)) \
+                / (2.0 * eps)
+            else:
+                dGammaMat[:,i] = \
+                (funcname(devplus[i, :], param) \
+                -funcname(devminus[i, :], param)) / (2.0 * eps)
+        else:
+            dGammaMat[:,i] = \
+            (funcname(devplus[i, :], param) \
+            -funcname(devminus[i, :], param)) / (2.0 * eps)
+
+    # partition into parts as labeled by Uhlig
+    AA = np.array(dGammaMat[0:ny, nx:2 * nx])
+    BB = np.array(dGammaMat[0:ny, 2 * nx:3 * nx])
+    CC = np.array(dGammaMat[0:ny, 3 * nx + ny:3 * nx + 2 * ny])
+    DD = np.array(dGammaMat[0:ny, 3 * nx + 2 * ny + nz:length])
+    FF = np.array(dGammaMat[ny:ny + nx, 0:nx])
+    GG = np.array(dGammaMat[ny:ny + nx, nx:2 * nx])
+    HH = np.array(dGammaMat[ny:ny + nx, 2 * nx:3 * nx])
+    JJ = np.array(dGammaMat[ny:ny + nx, 3 * nx:3 * nx + ny])
+    KK = np.array(dGammaMat[ny:ny + nx, 3 * nx + ny:3 * nx + 2 * ny])
+    LL = np.array(dGammaMat[ny:ny + nx, 3 * nx + 2 * ny:3 * nx + 2 * ny + nz])
+    MM = np.array(dGammaMat[ny:ny + nx, 3 * nx + 2 * ny + nz:length])
+
+    return [AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM]
+
+
+#------------------------------------------------------------------------------
 
 def _nullSpaceBasis(A):
     """
@@ -46,6 +193,7 @@ def _nullSpaceBasis(A):
         return np.mat(vecs)
     else:
         return zeros((0, 0))
+    
 
 def qzswitch(i, A, B, Q, Z):
     '''
@@ -111,6 +259,7 @@ def qzswitch(i, A, B, Q, Z):
        Z[:,i-1:i+1] = Z[:,i-1:i+1].dot(wz)
        Q[i-1:i+1,:] = xy.dot(Q[i-1:i+1,:])
     return A, B, Q, Z
+
 
 def qzdiv(stake, A, B, Q, Z):
     '''
@@ -497,21 +646,12 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         QQSS_vec = sp.dot(la.inv(sp.mat(VV)), sp.mat(LLNN_plus_MM))
         QQSS_vec = -QQSS_vec
         if max(abs(QQSS_vec)) == sp.inf:
-            print("We have issues with Q and S. Entries are undefined. Probably because V is no inverible.")
+            print("We have issues with Q and S. Entries are undefined. Probably
+            because V is no inverible.")
         
         QQ = sp.reshape(QQSS_vec[0:m_states*k_exog],(m_states,k_exog))
-        SS = sp.reshape(QQSS_vec[(m_states*k_exog):((m_states+n_endog)*k_exog)],(n_endog,k_exog))
-        
-        # The vstack and hstack's below are ugly, but safe. If you have issues with WW uncomment the first definition and comment out the second one.
-        #WW = sp.vstack((\
-        #sp.hstack((sp.eye(m_states), sp.zeros((m_states,k_exog)))),\
-        #sp.hstack((sp.dot(RR,sp.pinv(PP)), (SS-sp.dot(sp.dot(RR,sp.pinv(PP)),QQ)))),\
-        #sp.hstack((sp.zeros((k_exog,m_states)),sp.eye(k_exog)))))
-        
-        WW = sp.array([[sp.eye(m_states), sp.zeros((m_states,k_exog))],\
-        [sp.dot(RR,la.pinv(PP)), (SS-sp.dot(sp.dot(RR,la.pinv(PP)),QQ))],\
-        [sp.zeros((k_exog,m_states)),sp.eye(k_exog)]])
-    
+        SS = sp.reshape(QQSS_vec[(m_states*k_exog):((m_states+n_endog)*k_exog)]
+            ,(n_endog,k_exog))    
         '''
         
         # this code is from Yulong Li's 2015 version
@@ -523,7 +663,7 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         NN = sp.mat(NN)
         LLNN_plus_MM = dot(LL, NN) + MM
 
-        if ny>0:
+        if DD.any():
             impvec = vstack([DD, LLNN_plus_MM])
         else:
             impvec = LLNN_plus_MM
@@ -545,3 +685,178 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         
 
     return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)
+
+
+#------------------------------------------------------------------------------
+
+def LinApp_Sim(Xm, Z, PP, QQ, RR, SS):
+    '''
+    Uses the coefficients from a linear approximation to generate data for
+    next period given today's state. The set of endogenous state variables 
+    known today is Xm and the set of exogenous state variables is Z.
+    This program generates X.  
+
+    The input and output values are in deviation from the linearization point 
+    (almost always the steady  state, but not necessarily so).  This means 
+    you will need to add back the steady state or other values after you have 
+    called this function.  How you do this depends on whether you used 
+    log-linearization or simple linearization in deriving the values of the 
+    input coefficients.
+
+    Parameters
+    -----------
+    Xm: array, dtype=float
+        nx vector of X(t-1) values
+
+    Z: array, dtype=float
+        nz vector of Z(t) values
+
+    PP: 2D-array, dtype=float
+        nx-by-nx  matrix of X(t-1) on X(t) coefficients
+
+    QQ: 2D-array, dtype=float
+        nx-by-nz  matrix of Z(t) on X(t) coefficients
+
+    RR: 2D-array, dtype=float
+        ny-by-nx  matrix of X(t-1) on Y(t) coefficients
+
+    SS: 2D-array, dtype=float
+        ny-by-nz  matrix of Z(t) on Y(t) coefficients
+
+    Returns
+    --------
+    X: array, dtype=float
+        nx vector containing the value of the endogenous
+        state variables for next period
+    
+    Y: array, dtype=float
+        ny vector containing the value of the endogenous
+        non-state variables for the current period
+    '''
+    # Find the number of each kind of state variable
+    # Using Xm find nx
+    if len(Xm.shape)!=1:
+        print('Xm must be a one-dimensional array')
+    else:
+        nx = Xm.shape[0]
+        # Using RR find ny
+        ny = RR.shape[0]
+
+        # Using Z find nz
+        if len(Z.shape)!=1:
+            print('Z must be a one-dimensional array')
+        else:
+            nz = Z.shape[0]
+
+            # Check conformity of input coefficient matrices
+            d1,d2 = PP.shape
+            if d1 != nx or d2 != nx:
+                print('Dimensions of PP incorrect')
+
+            d1,d2 = QQ.shape
+            if d1 != nx or d2 != nz:
+                print('dimensions of QQ incorrect')
+
+            # Generate data for next period, one equation at a time
+            X = PP.dot(Xm) + QQ.dot(Z)
+
+            if ny>0:
+                Y = RR.dot(Xm) + SS.dot(Z)
+            else:
+                Y = []
+                
+    return np.array(X), np.array(Y)
+
+
+#------------------------------------------------------------------------------
+
+def LinApp_SSL(X0, Z, XYbar, logX, PP, QQ, RR, SS):
+    '''
+    Generates a history of X & Y variables by linearizing the policy function
+    about the steady state as in Uhlig's toolkit.
+    
+    Parameters
+    -----------    
+    X0: array, dtype=float
+        nx vector of X(1) starting values values
+    
+    Z: 2D-array, dtype=float
+        nobs-by-nz matrix of Z values
+    
+    XYbar: array, dtype=float
+        nx+ny vector of X and Y steady state values
+    
+    logX: binary, dtype=int
+        an indicator that determines if the X & Y variables are
+        log-linearized (true) or simply linearized (false).  Z variables
+        are always simply linearized.
+    
+    PP: 2D-array, dtype=float
+        nx-by-nx matrix of X(t-1) on X(t) coefficients
+    
+    QQ: 2D-array, dtype=float
+        nx-by-nz  matrix of Z(t) on X(t) coefficients
+    
+    Y0: array, dtype=float
+        ny vector of Y(1) starting values values.
+    
+    RR: 2D-array, dtype=float
+        ny-by-nx  matrix of X(t-1) on Y(t) coefficients
+    
+    SS: 2D-array, dtype=float
+        ny-by-nz  matrix of Z(t) on Y(t) coefficients
+    
+    Returns
+    --------
+    X: 2D-array, dtype=float
+        nobs-by-nx matrix containing the value of the endogenous
+        state variables
+    
+    Y: 2D-array, dtype=float
+        nobs-by-ny matrix vector containing the value of the endogenous
+        non-state variables
+    '''
+    # Formating
+    X0 = array(X0)
+
+    # get values for nx, ny, nz and nobs
+    nobs,nz = Z.shape
+    nx = X0.shape[0]
+    nxy = XYbar.shape[0]
+    ny = nxy - nx
+
+    # get Xbar and Ybar
+    Xbar = XYbar[0:nx]
+    Ybar = XYbar[nx:nx+ny]
+
+    # Generate a history of X's and Y's
+    X = zeros((nobs,nx))
+    Y = zeros((nobs,ny))
+    Xtil = zeros((nobs,nx))
+    Ytil = zeros((nobs,ny))
+    
+    # set starting values
+    if logX:
+        Xtil[0,:] = log(X0/Xbar)
+    else:
+        Xtil[0,:] = X0 - Xbar
+
+    # simulate
+    for t in range(0, nobs-1):
+        Xtemp, Ytemp = LinApp_Sim(Xtil[t,:], Z[t,:], PP, QQ, RR, SS)
+        Xtil[t+1,:] = Xtemp
+        if ny>0:
+            Ytil[t,:] = Ytemp
+        
+    # Convert to levels
+    if logX:
+        X = tile(Xbar,(nobs,1))*exp(Xtil)
+        if ny> 0:
+            Y = tile(Ybar,(nobs,1))*exp(Ytil)
+    else:
+        X = tile(Xbar,(nobs,1))+Xtil
+        if ny>0:
+            Y = tile(Ybar,(nobs,1))+Ytil
+
+    return X, Y #Note if ny=0, Y is a nobs by 0 empty matrix 
+    
