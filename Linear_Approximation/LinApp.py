@@ -65,7 +65,7 @@ def LinApp_FindSS(funcname, param, guessXY, Zbar, nx, ny):
 #	'''
     f = lambda XYbar: steady(XYbar, Zbar, funcname, param, nx, ny)
     XYbar = opt.fsolve(f, guessXY)
-
+    
     return XYbar
 
 
@@ -663,7 +663,7 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
         NN = sp.mat(NN)
         LLNN_plus_MM = dot(LL, NN) + MM
 
-        if DD.any():
+        if DD.size>0:
             impvec = vstack([DD, LLNN_plus_MM])
         else:
             impvec = LLNN_plus_MM
