@@ -412,7 +412,7 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     # The coding for Uhlig's solution for QQ and SS gives incorrect results
     # So we will use numpy's Sylvester equation solver regardless of the value
     #  chosen for Sylv
-    Sylv = True
+    Sylv = 1
     
     #The original coding we did used the np.matrix form for our matrices so we
     #make sure to set our inputs to numpy matrices.
@@ -596,15 +596,15 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     # The if and else below make RR and VV depending on our model's setup.
     if l_equ == 0:
         RR = zeros((0, nx))
-        VV = hstack((kron(NN.T, FF) + kron(eye(nz), \
-            (dot(FF, PP) + GG)), kron(NN.T, JJ) + kron(eye(nz), KK))) 
+        # VV = hstack((kron(NN.T, FF) + kron(eye(nz), \
+        #     (dot(FF, PP) + GG)), kron(NN.T, JJ) + kron(eye(nz), KK))) 
 
     else:
         RR = - dot(CC_plus, (dot(AA, PP) + BB))
-        VV = sp.vstack((hstack((kron(eye(nz), AA), \
-                        kron(eye(nz), CC))), hstack((kron(NN.T, FF) +\
-                        kron(eye(nz), dot(FF, PP) + dot(JJ, RR) + GG),\
-                        kron(NN.T, JJ) + kron(eye(nz), KK)))))
+        # VV = sp.vstack((hstack((kron(eye(nz), AA), \
+        #                 kron(eye(nz), CC))), hstack((kron(NN.T, FF) +\
+        #                 kron(eye(nz), dot(FF, PP) + dot(JJ, RR) + GG),\
+        #                 kron(NN.T, JJ) + kron(eye(nz), KK)))))
 
     # Now we use LL, NN, RR, VV to get the QQ, RR, SS, VV matrices.
     # first try using Sylvester equation solver
@@ -698,7 +698,7 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     #                         (ny, nz), 'F')
         
 
-    # return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)
+    return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)
 
 
 #------------------------------------------------------------------------------
