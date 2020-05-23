@@ -590,114 +590,45 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
             if (sum(sum(abs(PP_imag))) / sum(sum(abs(PP))) > .000001).any():
                 print("A lot of P is complex. We will continue with the" +
                       " real part and hope we don't lose too much information.")
-    # The code from here to the end was from he Uhlig file calc_qrs.m.
-    # I think for python it fits better here than in a separate file.
 
-    # The if and else below make RR and VV depending on our model's setup.
+    # The if and else below make RR depending on our model's setup.
     if l_equ == 0:
-        RR = zeros((0, nx))
-        # VV = hstack((kron(NN.T, FF) + kron(eye(nz), \
-        #     (dot(FF, PP) + GG)), kron(NN.T, JJ) + kron(eye(nz), KK))) 
-
+        RR = zeros((0, nx)) #empty matrix
     else:
         RR = - dot(CC_plus, (dot(AA, PP) + BB))
-        # VV = sp.vstack((hstack((kron(eye(nz), AA), \
-        #                 kron(eye(nz), CC))), hstack((kron(NN.T, FF) +\
-        #                 kron(eye(nz), dot(FF, PP) + dot(JJ, RR) + GG),\
-        #                 kron(NN.T, JJ) + kron(eye(nz), KK)))))
 
-    # Now we use LL, NN, RR, VV to get the QQ, RR, SS, VV matrices.
-    # first try using Sylvester equation solver
+    # Now we use Sylvester equation solver to find QQ and SS matrices.
     '''
     This code written by Kerk Phillips 2020
     '''
-    if Sylv:
-        CCinv = npla.inv(CC)
-        if ny>0:
-            PM = npla.inv(FF-np.matmul(np.matmul(JJ,CCinv), AA))
-            # if npla.matrix_rank(PM)< nx+ny:
-            #     Sylv=0
-            #     print("Sylvester equation solver condition is not satisfied;"\
-            #             +" proceed with the original method...")
-        else:
-            PM = npla.inv(FF)
-            # if npla.matrix_rank(FF)< nx:
-            #     Sylv=0
-            #     print("Sylvester equation solver condition is not satisfied;"\
-            #             +" proceed with the original method...")
-        print("Using Sylvester equation solver...")
-        if ny>0:
-            JCAP = np.matmul(np.matmul(JJ,CCinv), np.matmul(AA,PP))
-            JCB = np.matmul(np.matmul(JJ,CCinv), BB)
-            KCA = np.matmul(np.matmul(KK,CCinv), AA)
-            KCD = np.matmul(np.matmul(KK,CCinv), DD)
-            JCDN = np.matmul(np.matmul(JJ,CCinv), np.matmul(DD,NN))
-            Anew = PM.dot(FF.dot(PP) + GG - JCAP - JCB - KCA)
-            Bnew = NN
-            Cnew = PM.dot(KCD - LL.dot(NN) + JCDN - MM)
-            QQ = la.solve_sylvester(Anew,Bnew,Cnew)
-            SS = la.solve(-CC, (AA.dot(QQ)+DD))
-        else:
-            Anew = PM.dot(FF.dot(PP) + GG)
-            Bnew = NN
-            Cnew = PM.dot(- LL.dot(NN) - MM)
-            QQ = la.solve_sylvester(Anew,Bnew,Cnew)
-            SS = np.zeros((0,nz)) #empty matrix
+
+    CCinv = npla.inv(CC)
+    if ny>0:
+        PM = npla.inv(FF-np.matmul(np.matmul(JJ,CCinv), AA))
+        if npla.matrix_rank(PM)< nx+ny:
+            print("Sylvester equation solver condition is not satisfied")
+    else:
+        PM = npla.inv(FF)
+        if npla.matrix_rank(FF)< nx:
+            print("Sylvester equation solver condition is not satisfied")
+    if ny>0:
+        JCAP = np.matmul(np.matmul(JJ,CCinv), np.matmul(AA,PP))
+        JCB = np.matmul(np.matmul(JJ,CCinv), BB)
+        KCA = np.matmul(np.matmul(KK,CCinv), AA)
+        KCD = np.matmul(np.matmul(KK,CCinv), DD)
+        JCDN = np.matmul(np.matmul(JJ,CCinv), np.matmul(DD,NN))
+        Anew = PM.dot(FF.dot(PP) + GG - JCAP - JCB - KCA)
+        Bnew = NN
+        Cnew = PM.dot(KCD - LL.dot(NN) + JCDN - MM)
+        QQ = la.solve_sylvester(Anew,Bnew,Cnew)
+        SS = la.solve(-CC, (AA.dot(QQ)+DD))
+    else:
+        Anew = PM.dot(FF.dot(PP) + GG)
+        Bnew = NN
+        Cnew = PM.dot(- LL.dot(NN) - MM)
+        QQ = la.solve_sylvester(Anew,Bnew,Cnew)
+        SS = np.zeros((0,nz)) #empty matrix
     
-    # # then the Uhlig's way
-    # else:
-    #     '''
-    #     # This code is from Spencer Lypn's 2012 version
-    #     q_eqns = sp.shape(FF)[0]
-    #     m_states = sp.shape(FF)[1]
-    #     l_equ = sp.shape(CC)[0]
-    #     n_endog = sp.shape(CC)[1]
-    #     k_exog = min(sp.shape(sp.mat(NN))[0], sp.shape(sp.mat(NN))[1])
-    #     sp.mat(LL.T)
-    #     sp.mat(NN)
-    #     sp.dot(sp.mat(LL),sp.mat(NN))
-    #     LLNN_plus_MM = sp.dot(sp.mat(LL),sp.mat(NN)) + sp.mat(MM.T)
-    #     QQSS_vec = sp.dot(la.inv(sp.mat(VV)), sp.mat(LLNN_plus_MM))
-    #     QQSS_vec = -QQSS_vec
-    #     if max(abs(QQSS_vec)) == sp.inf:
-    #         print("We have issues with Q and S. Entries are undefined. \
-    #               Probably because V is no inverible.")
-        
-    #     QQ = sp.reshape(QQSS_vec[0:m_states*k_exog],(m_states,k_exog))
-    #     SS = sp.reshape(QQSS_vec[(m_states*k_exog):((m_states+n_endog)*k_exog)]
-    #         ,(n_endog,k_exog))    
-    #     '''
-        
-    #     # this code is from Yulong Li's 2015 version
-    #     if (npla.matrix_rank(VV) < nz * (nx + ny)):
-    #         print("Sorry but V is not invertible. Can't solve for Q and S;"+
-    #                  " but we proceed anyways...")
-        
-    #     LL = sp.mat(LL)
-    #     NN = sp.mat(NN)
-    #     LLNN_plus_MM = dot(LL, NN) + MM
-
-    #     if DD.size>0:
-    #         impvec = vstack([DD, LLNN_plus_MM])
-    #     else:
-    #         impvec = LLNN_plus_MM
-
-    #     impvec = np.reshape(impvec, ((nx + ny) * nz, 1), 'F')
-        
-    #     QQSS_vec = np.matrix(la.solve(-VV, impvec))
-
-    #     if (max(abs(QQSS_vec)) == sp.inf).any():
-    #         print("We have issues with Q and S. Entries are undefined." +
-    #                   " Probably because V is no inverible.")
-
-    #     #Build QQ SS
-    #     QQ = np.reshape(np.matrix(QQSS_vec[0:nx * nz, 0]),
-    #                         (nx, nz), 'F')
-
-    #     SS = np.reshape(QQSS_vec[(nx * nz):((nx + ny) * nz), 0],\
-    #                         (ny, nz), 'F')
-        
-
     return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)
 
 
