@@ -412,7 +412,6 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     # The coding for Uhlig's solution for QQ and SS gives incorrect results
     # So we will use numpy's Sylvester equation solver regardless of the value
     #  chosen for Sylv
-    Sylv = 1
     
     #The original coding we did used the np.matrix form for our matrices so we
     #make sure to set our inputs to numpy matrices.
@@ -484,7 +483,6 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
 
     # From here to line 158 we Diagonalize Xi, form Lambda/Omega and find P.
     else:
-        Xi_sortabs = np.sort(abs(eVals))
         Xi_sortindex = np.argsort(abs(eVals))
         Xi_sortedVec = np.array([eVecs[:, i] for i in Xi_sortindex]).T
         Xi_sortval = eVals[Xi_sortindex]
@@ -521,7 +519,6 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
             Delta_up,Xi_up,UUU,VVV=la.qz(Delta_mat,Xi_mat, output='complex')
             UUU=UUU.T
             Xi_eigval = np.diag( np.diag(Xi_up)/np.maximum(np.diag(Delta_up),TOL))
-            Xi_sortabs= np.sort(abs(np.diag(Xi_eigval)))
             Xi_sortindex= np.argsort(abs(np.diag(Xi_eigval)))
             Xi_sortval = Xi_eigval[Xi_sortindex, Xi_sortindex]
             Xi_select = np.arange(0, nx)
