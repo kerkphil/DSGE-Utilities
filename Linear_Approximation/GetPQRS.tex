@@ -1,0 +1,99 @@
+\documentclass[letterpaper,12pt]{article}
+% packages used
+    \usepackage{natbib}
+	\usepackage{threeparttable}
+	\usepackage[format=hang,font=normalsize,labelfont=bf]{caption}
+	\usepackage{amsmath}
+	\usepackage{amssymb}
+	\usepackage{amsthm}
+	\usepackage{caption}
+	\usepackage{subcaption}
+	\usepackage{setspace}
+	\usepackage{float,color}
+	\usepackage[pdftex]{graphicx}
+	\usepackage{hyperref}
+	\usepackage{multirow}
+	\usepackage{float,graphicx,color}
+	\usepackage{graphics}
+    \usepackage{placeins}
+    \usepackage{authblk}
+    \usepackage{tikz}
+    \usepackage{xcolor}
+
+% other setup
+	\hypersetup{colorlinks, linkcolor=red, urlcolor=blue, citecolor=red, hypertexnames=false}
+	\graphicspath{{./figures/}}
+	\DeclareMathOperator*{\Max}{Max}
+	\bibliographystyle{aer}
+	\newcommand\ve{\varepsilon}
+
+
+\begin{document}
+
+\begin{spacing}{1.5}
+
+We have the following linearized equations:
+\begin{align}
+	& A X_{t+1} + B X_t + C Y_t + D Z_t = 0 \\
+	& F X_{t+2} + G X_{t+1} + H X_t + J Y_{t+1} + K Y_t + L Z_{t+1} + M Z_t = 0 \\
+	& X_{t+1} = P X_t + Q Z_t \\
+	& Y_t = R X_t + S Z_t
+\end{align}
+
+Working on first equation:
+\begin{align}
+    & A (P X_t + Q Z_t) + B X_t + C (R X_t + S Z_t) + D Z_t = 0 \nonumber \\
+    & (AP + B + CR) X_t + (AQ + CS + D) Z_t = 0 \nonumber
+\end{align}
+
+Working on second equation:
+\begin{align}
+    \begin{split} & F (P X_{t+1} + Q Z_{t+1}) + G X_{t+1} + H X_t + J (R X_{t+1} + S Z_{t+1}) + K Y_t \\ & \quad + L Z_{t+1} + M Z_t = 0 \end{split} \nonumber \\
+    & (FP + G + JR) X_{t+1} + H X_t + K Y_t + (FQ + L + JS)Z_{t+1} + M Z_t = 0 \nonumber \\
+    \begin{split} & (FP + G + JR) (P X_t + Q Z_t) + H X_t + K (R X_t + S Z_t) \\ & \quad + (FQ + L + JS) N Z_t + M Z_t = 0 \end{split} \nonumber \\
+    \begin{split} & [(FP + G + JR) P + H + KR] X_t \\ & \quad + [(FP + G + JR) Q + KS +(FQ + L + JS) N + M] Z_t = 0 \end{split}
+\end{align}
+
+This gives the following conditions which allow us to solve for $P$, $Q$, $R$, and $S$.
+\begin{align}
+    & AP + B + CR = 0 \label{eq_cond1} \\
+    & AQ + CS + D = 0 \label{eq_cond2} \\
+    & (FP + G + JR) P + H + KR = 0 \label{eq_cond3} \\
+    & (FP + G + JR) Q + KS +(FQ + L + JS) N + M = 0 \label{eq_cond4}
+\end{align}
+
+Solve \eqref{eq_cond1} for $R$ and substitute this into \eqref{eq_cond3}.  Rearranging gives a matrix quadratic in $P$.  Solving for $P$ then gives $R$.
+\begin{align}
+	& R = -C^{-1} (AP + B) \nonumber \\
+	& FP^2 + GP + JRP + H + KR = 0 \nonumber \\
+	& FP^2 + GP + H + J[-C^{-1} (AP + B)] P + K [-C^{-1} (AP + B)] = 0 \nonumber \\
+	& FP^2 + GP + H - JC^{-1} (AP + B)] P - K C^{-1} (AP + B) = 0 \nonumber \\
+	& FP^2 + GP + H - JC^{-1} AP^2  - J C^{-1} BP - K C^{-1} AP - K C^{-1} B = 0 \nonumber \\ 
+	& (F - JC^{-1}A) P^2 + (G - JC^{-1}B - KC^{-1}A) P + (H - K C^{-1} B) = 0
+\end{align}
+\begin{align}
+	& \mathbf{A} P^2 + \mathbf{B} P + \mathbf{C} = 0 \nonumber \\
+	& \mathbf{A} = (F - JC^{-1}A) \nonumber \\
+	& \mathbf{B} = (G - JC^{-1}B - KC^{-1}A) \nonumber \\
+	& \mathbf{C} = (H - K C^{-1} B) \nonumber
+\end{align}
+
+Solve \eqref{eq_cond2} for $S$ and substitute this into \eqref{eq_cond4}.  Rearranging gives a Sylvester equation in $Q$.  Solving for $Q$ then gives $S$.
+\begin{align}
+	& S = -C^{-1} (AQ + D) \nonumber \\
+	& FPQ + GQ + JRQ + KS + FQN + LN + JSN + M = 0 \nonumber \\
+	\begin{split} & FPQ + GQ + J[-C^{-1} (AP + B]Q + K[-C^{-1} (AQ + D)] + FQN + LN \\ & \quad + J[-C^{-1} (AQ + D)]N + M = 0 \end{split} \nonumber \\
+	\begin{split} & FPQ + GQ - J C^{-1} APQ+ - J C^{-1} BQ - K C^{-1} AQ - K C^{-1} D \\ & \quad + FQN + LN - J C^{-1} AQN - J C^{-1} DN + M = 0 \end{split} \nonumber \\
+	\begin{split} & (FP + G - JC^{-1}AP - JC^{-1}B - KC^{-1}A ) Q + (F - JC^{-1}A) Q N \\ & \quad = K C^{-1} D - LN + J C^{-1} DN - M \end{split} \nonumber \\
+	\begin{split} & (F - JC^{-1}A)^{-1} (FP + G - JC^{-1}AP - JC^{-1}B - KC^{-1}A ) Q +  Q N \\ & \quad = (F - JC^{-1}A)^{-1} (K C^{-1} D - LN + J C^{-1} DN - M) \end{split}
+\end{align}
+\begin{align}
+	& \mathbf{D} Q + Q \mathbf{E} = \mathbf{F}  \nonumber \\
+	& \mathbf{D} = (F - JC^{-1}A)^{-1} (FP + G - JC^{-1}AP - JC^{-1}B - KC^{-1}A ) \nonumber \\
+	& \mathbf{E} = N \nonumber \\
+	& \mathbf{F} = (F - JC^{-1}A)^{-1} (K C^{-1} D - LN + J C^{-1} DN - M) \nonumber
+\end{align}
+
+\end{spacing}
+
+\end{document}
