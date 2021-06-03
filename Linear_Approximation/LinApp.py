@@ -3,9 +3,13 @@ MATLAB version 1.0 written by Kerk Phillips, April 2014
 
 PYTHON version adapted by Yulong Li, November 2015 
 
-updates 20 Nov 2017 by Kerk Phillips
+updated 20 Nov 2017 by Kerk Phillips
 
 additional updates 22 May 2020 by Kerk Phillips
+
+more updates 3 June 2021 by Kerk Phillips
+    replaced scipy.optimize.fsolve with scipy.optimize.root in the steady
+    state solution code
 '''
 
 import numpy as np
@@ -66,7 +70,9 @@ def LinApp_FindSS(funcname, param, guessXY, Zbar, nx, ny):
 #		values in positions 1 - nx and the Y values in nx+1 - nx+ny.
 #	'''
     f = lambda XYbar: steady(XYbar, Zbar, funcname, param, nx, ny)
-    XYbar = opt.fsolve(f, guessXY)
+    output = opt.root(f, guessXY, method='hybr')
+    
+    XYbar = output.x
     
     return XYbar
 
