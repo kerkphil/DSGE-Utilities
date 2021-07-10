@@ -119,7 +119,7 @@ def LinApp_Deriv(funcname, param, theta0, nx, ny, nz, logX):
     
     # set vaue for epsilon
     # eps = 2.2E-16  # machine epsilon for double-precision
-    eps = 10E-6
+    eps = 1.0E-6
 
     # Constant term, T0, should be very close to zero if linearizing about SS
     T0 = funcname(theta0, param)  
