@@ -603,33 +603,42 @@ def LinApp_Solve(AA, BB, CC, DD, FF, GG, HH, JJ, KK, LL, MM, NN, Z0, Sylv):
     # Now we use Sylvester equation solver to find QQ and SS matrices.
     '''
     This code written by Kerk Phillips 2020
+    updated in July 2021
     '''
 
     CCinv = npla.inv(CC)
-    if ny>0:
-        PM = npla.inv(FF-np.matmul(np.matmul(JJ,CCinv), AA))
-        if npla.matrix_rank(PM)< nx+ny:
-            print("Sylvester equation solver condition is not satisfied")
-    else:
-        PM = npla.inv(FF)
-        if npla.matrix_rank(FF)< nx:
-            print("Sylvester equation solver condition is not satisfied")
+    # if ny>0:
+    #     PM = npla.inv(FF-np.matmul(np.matmul(JJ,CCinv), AA))
+    #     if npla.matrix_rank(PM)< nx+ny:
+    #         print("Sylvester equation solver condition is not satisfied")
+    # else:
+    #     PM = npla.inv(FF)
+    #     if npla.matrix_rank(FF)< nx:
+    #         print("Sylvester equation solver condition is not satisfied")
     if ny>0:
         JCAP = np.matmul(np.matmul(JJ,CCinv), np.matmul(AA,PP))
         JCB = np.matmul(np.matmul(JJ,CCinv), BB)
         KCA = np.matmul(np.matmul(KK,CCinv), AA)
         KCD = np.matmul(np.matmul(KK,CCinv), DD)
         JCDN = np.matmul(np.matmul(JJ,CCinv), np.matmul(DD,NN))
-        Anew = PM.dot(FF.dot(PP) + GG - JCAP - JCB - KCA)
-        Bnew = NN
-        Cnew = PM.dot(KCD - LL.dot(NN) + JCDN - MM)
-        QQ = la.solve_sylvester(Anew,Bnew,Cnew)
+        Dnew = FF.dot(PP) + GG - JCAP - JCB - KCA
+        Fnew = FF-np.matmul(np.matmul(JJ,CCinv), AA)
+        Gnew = NN
+        Hnew = KCD - LL.dot(NN) + JCDN - MM
+        Asyl = npla.inv(Dnew).dot(Fnew)
+        Bsyl = npla.inv(Gnew)
+        Csyl = np.matmul(npla.inv(Dnew).dot(Hnew), npla.inv(Gnew))
+        QQ = la.solve_sylvester(Asyl,Bsyl,Csyl)
         SS = la.solve(-CC, (AA.dot(QQ)+DD))
     else:
-        Anew = PM.dot(FF.dot(PP) + GG)
-        Bnew = NN
-        Cnew = PM.dot(- LL.dot(NN) - MM)
-        QQ = la.solve_sylvester(Anew,Bnew,Cnew)
+        Dnew = FF.dot(PP) + GG
+        Fnew = FF
+        Gnew = NN
+        Hnew = - LL.dot(NN) - MM
+        Asyl = npla.inv(Dnew).dot(Fnew)
+        Bsyl = npla.inv(Gnew)
+        Csyl = np.matmul(npla.inv(Dnew).dot(Hnew), npla.inv(Gnew))
+        QQ = la.solve_sylvester(Asyl,Bsyl,Csyl)
         SS = np.zeros((0,nz)) #empty matrix
     
     return np.array(PP), np.array(QQ), np.array(RR), np.array(SS)
